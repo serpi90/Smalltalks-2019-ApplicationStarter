@@ -35,10 +35,11 @@ Smalltalks2019ExampleServer >> factorial: aRequest [
 { #category : #processing }
 Smalltalks2019ExampleServer >> handleError: aSignal [
 
-	debugMode
+	^ debugMode
 		ifTrue: [ aSignal pass ]
-		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal ].
-	^ TeaResponse serverError
+		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal.
+			aSignal return: TeaResponse serverError
+			]
 ]
 
 { #category : #initialization }
