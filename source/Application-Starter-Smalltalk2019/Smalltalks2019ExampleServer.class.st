@@ -37,7 +37,8 @@ Smalltalks2019ExampleServer >> handleError: aSignal [
 
 	debugMode
 		ifTrue: [ aSignal pass ]
-		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal ]
+		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal ].
+	^ TeaResponse serverError
 ]
 
 { #category : #initialization }
