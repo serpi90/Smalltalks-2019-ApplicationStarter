@@ -2,38 +2,57 @@ Class {
 	#name : #Smalltalks2019ExampleServer,
 	#superclass : #Object,
 	#instVars : [
-		'server'
+		'server',
+		'debugMode',
+		'trimPolicy',
+		'capitalizationPolicy'
 	],
 	#category : #'Application-Starter-Smalltalk2019'
 }
 
 { #category : #'instance creation' }
-Smalltalks2019ExampleServer class >> deployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean [
+Smalltalks2019ExampleServer class >> deployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean debugMode: isDebugMode [
 
-	^ self new initializeDeployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean
+	^ self new
+		initializeDeployedOn: aPort
+		changingCaseWith: aCapitalizationPolicy
+		trimBlanks: aBoolean
+		debugMode: isDebugMode
+]
+
+{ #category : #processing }
+Smalltalks2019ExampleServer >> echo: aRequest [
+
+	^ capitalizationPolicy value: ( trimPolicy value: aRequest contents  )
+]
+
+{ #category : #processing }
+Smalltalks2019ExampleServer >> factorial: aRequest [
+
+	^ ( aRequest at: #n ) asNumber factorial
+]
+
+{ #category : #processing }
+Smalltalks2019ExampleServer >> handleError: aSignal [
+
+	debugMode
+		ifTrue: [ aSignal pass ]
+		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal ]
 ]
 
 { #category : #initialization }
-Smalltalks2019ExampleServer >> initializeDeployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean [
+Smalltalks2019ExampleServer >> initializeDeployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean debugMode: isDebugMode [
 
-	server := Teapot configure: {( #port -> aPort )}.
+	trimPolicy := aBoolean
+		ifTrue: [ #trimBoth ]
+		ifFalse: [ #yourself ].
+	capitalizationPolicy := aCapitalizationPolicy.
+	debugMode := isDebugMode.
+	server := Teapot configure: ( Dictionary with: #port -> aPort with: #debugMode -> debugMode ).
 	server
-		exception:
-			Error
-				-> [ :signal | 
-					Smalltalks2019CommandLineHandler dumpStackAndReport: signal.
-					self halt
-					];
-		GET: '/factorial/<n>' -> [ :req | ( req at: #n ) asNumber factorial ];
-		POST:
-			'/echo'
-				-> [ :req | 
-					aCapitalizationPolicy
-						value:
-							( aBoolean
-								ifTrue: [ req body trimBoth ]
-								ifFalse: [ req body ] )
-					]
+		exception: Error -> ( Send message: #handleError: to: self );
+		GET: '/factorial/<n>' -> ( Send message: #factorial: to: self );
+		POST: '/echo' -> ( Send message: #echo: to: self )
 ]
 
 { #category : #initialization }

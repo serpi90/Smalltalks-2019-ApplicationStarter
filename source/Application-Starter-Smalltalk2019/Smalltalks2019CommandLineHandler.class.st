@@ -1,6 +1,9 @@
 Class {
 	#name : #Smalltalks2019CommandLineHandler,
 	#superclass : #ApplicationStarterCommandLineHandler,
+	#instVars : [
+		'capitalizationPolicies'
+	],
 	#category : #'Application-Starter-Smalltalk2019'
 }
 
@@ -29,33 +32,41 @@ Smalltalks2019CommandLineHandler class >> logPrefix [
 
 { #category : #'private - activation' }
 Smalltalks2019CommandLineHandler >> basicActivate [
+
 	| port capitalizationPolicy trim |
+
 	port := self configuration at: 'port'.
-	capitalizationPolicy := self configuration
-		at: 'capitalization-policy'.
+	capitalizationPolicy := self configuration at: 'capitalization-policy'.
 	trim := self configuration at: 'trim-blanks'.
-	(Smalltalks2019ExampleServer
+	( Smalltalks2019ExampleServer
 		deployedOn: port
 		changingCaseWith: capitalizationPolicy
-		trimBlanks: trim) start
+		trimBlanks: trim
+		debugMode: self isDebugModeEnabled ) start
 ]
 
 { #category : #'private - accessing' }
 Smalltalks2019CommandLineHandler >> configurationDefinition [
 
-	^ {( MandatoryArgument named: 'port' convertingWith: #asNumber ).
-	( FlagArgument named: 'trim-blanks' ).
-	( OptionalArgument
-		named: 'capitalization-policy'
-		defaultingTo: 'none'
-		convertingWith: [ :arg | 
-			Dictionary new
-				at: 'none' put: #youself;
-				at: 'uppercase' put: #asUppercase;
-				at: 'lowercase' put: #asLowercase;
-				at: 'titlecase'
-					put: [ :string | ' ' join: ( string substrings collect: [ :word | word capitalized ] ) ];
-				at: 'capitalized' put: #capitalized;
-				at: arg asLowercase
-			] )}
+	^ Array
+		with: ( MandatoryArgument named: 'port' convertingWith: #asNumber )
+		with: ( FlagArgument named: 'trim-blanks' )
+		with:
+			( OptionalArgument
+				named: 'capitalization-policy'
+				defaultingTo: 'none'
+				convertingWith: [ :arg | capitalizationPolicies at: arg asLowercase ] )
+]
+
+{ #category : #initialization }
+Smalltalks2019CommandLineHandler >> initialize [
+
+	super initialize.
+	capitalizationPolicies := Dictionary new
+		at: 'none' put: #yourself;
+		at: 'uppercase' put: #asUppercase;
+		at: 'lowercase' put: #asLowercase;
+		at: 'titlecase' put: [ :string | ' ' join: ( string substrings collect: #capitalized ) ];
+		at: 'capitalized' put: #capitalized;
+		yourself
 ]
