@@ -38,7 +38,7 @@ Smalltalks2019ExampleServer >> handleError: aSignal [
 	^ debugMode
 		ifTrue: [ aSignal pass ]
 		ifFalse: [ Smalltalks2019CommandLineHandler dumpStackAndReport: aSignal.
-			aSignal return: TeaResponse serverError
+			aSignal return: ( ZnResponse serverError: aSignal messageText )
 			]
 ]
 
