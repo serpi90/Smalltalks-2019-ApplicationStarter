@@ -3,33 +3,15 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'server',
-		'debugMode',
-		'trimPolicy',
-		'capitalizationPolicy'
+		'debugMode'
 	],
 	#category : #'Application-Starter-Smalltalk2019'
 }
 
 { #category : #'instance creation' }
-Smalltalks2019ExampleServer class >> deployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean debugMode: isDebugMode [
+Smalltalks2019ExampleServer class >> deployedOn: aPort mimeType: aMimeType debugEnabled: aBoolean [
 
-	^ self new
-		initializeDeployedOn: aPort
-		changingCaseWith: aCapitalizationPolicy
-		trimBlanks: aBoolean
-		debugMode: isDebugMode
-]
-
-{ #category : #processing }
-Smalltalks2019ExampleServer >> echo: aRequest [
-
-	^ capitalizationPolicy value: ( trimPolicy value: aRequest contents  )
-]
-
-{ #category : #processing }
-Smalltalks2019ExampleServer >> factorial: aRequest [
-
-	^ ( aRequest at: #n ) asNumber factorial
+	^ self new initializeDeployedOn: aPort mimeType: aMimeType debugEnabled: aBoolean
 ]
 
 { #category : #processing }
@@ -43,18 +25,14 @@ Smalltalks2019ExampleServer >> handleError: aSignal [
 ]
 
 { #category : #initialization }
-Smalltalks2019ExampleServer >> initializeDeployedOn: aPort changingCaseWith: aCapitalizationPolicy trimBlanks: aBoolean debugMode: isDebugMode [
+Smalltalks2019ExampleServer >> initializeDeployedOn: aPort mimeType: aMimeType debugEnabled: aBoolean [
 
-	trimPolicy := aBoolean
-		ifTrue: [ #trimBoth ]
-		ifFalse: [ #yourself ].
-	capitalizationPolicy := aCapitalizationPolicy.
-	debugMode := isDebugMode.
+	debugMode := aBoolean.
 	server := Teapot configure: ( Dictionary with: #port -> aPort with: #debugMode -> debugMode ).
 	server
-		exception: Error -> ( Send message: #handleError: to: self );
-		GET: '/factorial/<n>' -> ( Send message: #factorial: to: self );
-		POST: '/echo' -> ( Send message: #echo: to: self )
+		exception: Error -> [ :signal | self handleError: signal ];
+		GET: '/factorial/<n>' -> [ :request | ( request at: #n ) asNumber factorial ];
+		output: ( TeaOutput stringWithContentType: aMimeType )
 ]
 
 { #category : #initialization }
