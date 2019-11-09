@@ -13,4 +13,4 @@ COPY --from=loader /opt/pharo/*.sources .
 
 USER root
 EXPOSE 8080
-ENTRYPOINT [ "pharo", "Pharo.image", "smalltalks2019", "--port=8080" ]
+ENTRYPOINT [ "pharo", "Pharo.image", "smalltalks2019" ]
