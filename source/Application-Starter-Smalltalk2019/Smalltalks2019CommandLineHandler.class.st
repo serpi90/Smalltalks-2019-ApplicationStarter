@@ -44,5 +44,5 @@ Smalltalks2019CommandLineHandler >> configurationDefinition [
 			( OptionalArgument
 				named: 'format'
 				defaultingTo: 'text/plain'
-				convertingWith: [ :string | ZnMimeType fromString: 'text/plain' ] )
+				convertingWith: [ :string | ZnMimeType fromString: string ] )
 ]
