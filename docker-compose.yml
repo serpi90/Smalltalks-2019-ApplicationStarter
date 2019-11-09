@@ -3,11 +3,23 @@ services:
   app:
     build: .
     command: --port=8080
-    ports:
-      - '8080:8080'
     volumes:
       - ./logs:/app/logs
+    labels:
+      traefik.enable: 'true'
+      traefik.http.services.app.loadbalancer.server.port: 8080 
+      traefik.http.routers.app.rule: PathPrefix(`/factorial`)
+      traefik.http.routers.app.entryPoints: web
     ulimits:
       rtprio:
         soft: 2
         hard: 2
+  balancer:
+    image: traefik:v2.0
+    command:
+      - --providers.docker=true
+      - --entryPoints.web.address=:80
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro # Required because of docker backend, so traefik can get docker data.
